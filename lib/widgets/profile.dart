@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // Add this import to format dates
+import 'package:intl/intl.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -14,16 +14,11 @@ class _ProfilePageState extends State<ProfilePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Controllers for editable fields
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _bioController = TextEditingController();
-  final TextEditingController _bucketListController = TextEditingController();
-  // ... Add controllers for other fields as necessary
-
-  // Variables to store non-editable fields
-  DateTime? _dob;
-  String? _email;
-  // ... Add variables for other non-editable fields
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _schoolController = TextEditingController();
+  final TextEditingController _dietController = TextEditingController();
+  final TextEditingController _professionController = TextEditingController();
+  // Add more controllers for other fields as necessary
 
   @override
   void initState() {
@@ -31,24 +26,47 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserData();
   }
 
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _schoolController.dispose();
+    _dietController.dispose();
+    _professionController.dispose();
+    // Dispose other controllers
+    super.dispose();
+  }
+
   _loadUserData() async {
     var user = _auth.currentUser;
     if (user != null) {
-      var userData = await _firestore.collection('users').doc(user.uid).get();
-      if (userData.exists) {
-        setState(() {
-          // Set the data for editable fields
-          _nameController.text = userData.data()?['firstName'] ?? '';
-          _bioController.text = userData.data()?['bio'] ?? '';
-          _bucketListController.text = userData.data()?['bucketList'] ?? '';
-          // ... Set data for other fields
-
-          // Set the data for non-editable fields
-          _dob = (userData.data()?['DOB'] as Timestamp?)?.toDate();
-          _email = userData.data()?['email'] ?? '';
-          // ... Set data for other non-editable fields
-        });
+      try {
+        var userData = await _firestore.collection('users').doc(user.uid).get();
+        if (userData.exists && userData.data() != null) {
+          setState(() {
+            _firstNameController.text = userData.data()?['firstName'] ?? '';
+            _schoolController.text = userData.data()?['school'] ?? '';
+            _dietController.text = userData.data()?['diet'] ?? '';
+            _professionController.text = userData.data()?['profession'] ?? '';
+            // Set text for other controllers
+          });
+        }
+      } catch (e) {
+        print("Error fetching user data: $e");
       }
+    }
+  }
+
+  _saveUserData() async {
+    var user = _auth.currentUser;
+    if (user != null) {
+      await _firestore.collection('users').doc(user.uid).update({
+        'firstName': _firstNameController.text,
+        'school': _schoolController.text,
+        'diet': _dietController.text,
+        'profession': _professionController.text,
+        // Update other fields as necessary
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile Updated Successfully')));
     }
   }
 
@@ -56,43 +74,36 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
+        title: const Text('Profile'),
         actions: [
           IconButton(
-            icon: Icon(Icons.save),
+            icon: const Icon(Icons.save),
             onPressed: _saveUserData,
           ),
         ],
       ),
-      body: ListView(  // Use ListView to avoid overflow when keyboard appears
+      body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // Display the profile picture
-          // ... Add other widgets to display the profile data
-          // Editable fields
           TextField(
-            controller: _nameController,
-            decoration: InputDecoration(labelText: 'Name'),
+            controller: _firstNameController,
+            decoration: const InputDecoration(labelText: 'First Name'),
           ),
-          // ... Add TextFields for other editable fields
-
-          // Non-editable fields displayed as text
-          Text('Email: $_email'),
-          Text('Date of Birth: ${_dob != null ? DateFormat.yMMMd().format(_dob!) : "Not set"}'),
-          // ... Add Text widgets for other non-editable fields
+          TextField(
+            controller: _schoolController,
+            decoration: const InputDecoration(labelText: 'School'),
+          ),
+          TextField(
+            controller: _dietController,
+            decoration: const InputDecoration(labelText: 'Diet'),
+          ),
+          TextField(
+            controller: _professionController,
+            decoration: const InputDecoration(labelText: 'Profession'),
+          ),
+          // Add TextFields for other fields as needed
         ],
       ),
     );
-  }
-
-  void _saveUserData() {
-    var user = _auth.currentUser;
-    if (user != null) {
-      _firestore.collection('users').doc(user.uid).set({
-        'firstName': _nameController.text,
-        'bio': _bioController.text,
-        // ... Set data for other editable fields
-      }, SetOptions(merge: true));
-    }
   }
 }
