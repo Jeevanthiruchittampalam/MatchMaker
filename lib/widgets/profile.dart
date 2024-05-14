@@ -27,12 +27,10 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _favoriteActivitiesController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _fitnessHabitsController = TextEditingController();
-  final TextEditingController _genderController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _inspirationalFigureController = TextEditingController();
   final TextEditingController _languagesSpokenController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _locationPreferenceController = TextEditingController();
   final TextEditingController _lookingForController = TextEditingController();
   final TextEditingController _meaningOfLifeController = TextEditingController();
   final TextEditingController _nextCountryController = TextEditingController();
@@ -44,7 +42,6 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _photoMemeController = TextEditingController();
   final TextEditingController _photoSmileController = TextEditingController();
   final TextEditingController _photoVibeController = TextEditingController();
-  final TextEditingController _primaryGoalController = TextEditingController();
   final TextEditingController _professionController = TextEditingController();
   final TextEditingController _profilePictureURLController = TextEditingController();
   final TextEditingController _reincarnationAnimalController = TextEditingController();
@@ -52,16 +49,19 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _religionController = TextEditingController();
   final TextEditingController _schoolController = TextEditingController();
   final TextEditingController _secondFavFruitController = TextEditingController();
-  final TextEditingController _sexualPreferenceController = TextEditingController();
   final TextEditingController _superPowerController = TextEditingController();
   final TextEditingController _themeSongController = TextEditingController();
   final TextEditingController _weirdestDreamController = TextEditingController();
   final TextEditingController _zodiacController = TextEditingController();
 
-  // Controller for personalityColor
   String? _selectedPersonalityColor;
+  String? _selectedGender;
+  String? _selectedSexualPreference;
+  List<String> _selectedLookingFor = [];
+  double _locationPreference = 0;
+  String? _selectedPrimaryGoal;
+  String? _selectedFitnessHabits;
 
-  // List of available colors
   final List<String> _colorOptions = [
     'Yellow',
     'Navy',
@@ -75,9 +75,8 @@ class _ProfilePageState extends State<ProfilePage> {
     'White'
   ];
 
-  // Map of color names to hex codes
   final Map<String, Color> _colorMap = {
-    'Yellow': Color(0xFFFFCF23),
+    'Yellow': Color(0xFFFFEA00),
     'Navy': Color(0xFF00217D),
     'Red': Color(0xFFFF0000),
     'Black': Color(0xFF000000),
@@ -88,6 +87,33 @@ class _ProfilePageState extends State<ProfilePage> {
     'Orange': Color(0xFFDF751D),
     'White': Color(0xFFFFFFFF),
   };
+
+  final List<String> _genderOptions = ['Male', 'Female', 'Other'];
+  final List<String> _lookingForOptions = [
+    'The Love Of My Life',
+    'Long Term Relationship',
+    'Short-Term Relationship',
+    'Fling',
+    'NPC Interaction',
+    'Friend'
+  ];
+  final List<String> _primaryGoalOptions = [
+    'Live My Best Life',
+    'Have A Family',
+    'Save The World',
+    'Destroy The World',
+    'Make Money',
+    'Help People',
+    'Uncover The Secrets of The Universe',
+    'Chill'
+  ];
+  final List<String> _fitnessHabitsOptions = [
+    'God Mode',
+    'Athlete',
+    'I Dabble',
+    'Now and Then',
+    'Not My Thing'
+  ];
 
   @override
   void initState() {
@@ -111,12 +137,10 @@ class _ProfilePageState extends State<ProfilePage> {
     _favoriteActivitiesController.dispose();
     _firstNameController.dispose();
     _fitnessHabitsController.dispose();
-    _genderController.dispose();
     _heightController.dispose();
     _inspirationalFigureController.dispose();
     _languagesSpokenController.dispose();
     _locationController.dispose();
-    _locationPreferenceController.dispose();
     _lookingForController.dispose();
     _meaningOfLifeController.dispose();
     _nextCountryController.dispose();
@@ -128,7 +152,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _photoMemeController.dispose();
     _photoSmileController.dispose();
     _photoVibeController.dispose();
-    _primaryGoalController.dispose();
     _professionController.dispose();
     _profilePictureURLController.dispose();
     _reincarnationAnimalController.dispose();
@@ -136,7 +159,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _religionController.dispose();
     _schoolController.dispose();
     _secondFavFruitController.dispose();
-    _sexualPreferenceController.dispose();
     _superPowerController.dispose();
     _themeSongController.dispose();
     _weirdestDreamController.dispose();
@@ -151,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
         var userData = await _firestore.collection('users').doc(user.uid).get();
         if (userData.exists && userData.data() != null) {
           setState(() {
-            _dobController.text = (userData.data()!['DOB'] as Timestamp?)?.toDate().toString() ?? '';
+            _dobController.text = (userData.data()!['DOB'] as Timestamp?)?.toDate().toString().split(' ')[0] ?? '';
             _adjectiveController.text = userData.data()!['adjectiveThatPersonifiesMe'] ?? '';
             _maxAgeController.text = userData.data()!['agePreference']?['max'] ?? '';
             _minAgeController.text = userData.data()!['agePreference']?['min'] ?? '';
@@ -164,17 +186,20 @@ class _ProfilePageState extends State<ProfilePage> {
             _emailController.text = userData.data()!['email'] ?? '';
             _favoriteActivitiesController.text = userData.data()!['favoriteActivities'] ?? '';
             _firstNameController.text = userData.data()!['firstName'] ?? '';
-            _fitnessHabitsController.text = userData.data()!['fitnessHabits'] ?? '';
-            _genderController.text = userData.data()!['gender'] ?? '';
+            _selectedFitnessHabits = userData.data()!['fitnessHabits'] ?? '';
+            _selectedGender = userData.data()!['gender'] ?? '';
             _heightController.text = userData.data()!['height'] ?? '';
             _inspirationalFigureController.text = userData.data()!['inspirationalFigure'] ?? '';
             _languagesSpokenController.text = userData.data()!['languagesSpoken'] ?? '';
-            _locationPreferenceController.text = userData.data()!['locationPreference']?.toString() ?? '';
-            _lookingForController.text = userData.data()!['lookingFor'] ?? '';
+            _locationPreference = userData.data()!['locationPreference']?.toDouble() ?? 0;
+            _selectedLookingFor = List<String>.from(userData.data()!['lookingFor'] ?? []);
+            _lookingForController.text = _selectedLookingFor.join(', ');
             _meaningOfLifeController.text = userData.data()!['meaningOfLife'] ?? '';
             _nextCountryController.text = userData.data()!['nextCountryToTravelTo'] ?? '';
             _nounController.text = userData.data()!['nounThatSymbolizesMe'] ?? '';
             _selectedPersonalityColor = userData.data()!['personalityColor'] ?? '';
+            _selectedSexualPreference = userData.data()!['sexualPreference'] ?? '';
+            _selectedPrimaryGoal = userData.data()!['primaryGoal'] ?? '';
             _petsController.text = userData.data()!['pets'] ?? '';
             _phoneNumberController.text = userData.data()!['phoneNumber'] ?? '';
             _photoChillController.text = userData.data()!['photoChill'] ?? '';
@@ -182,7 +207,6 @@ class _ProfilePageState extends State<ProfilePage> {
             _photoMemeController.text = userData.data()!['photoMeme'] ?? '';
             _photoSmileController.text = userData.data()!['photoSmile'] ?? '';
             _photoVibeController.text = userData.data()!['photoVibe'] ?? '';
-            _primaryGoalController.text = userData.data()!['primaryGoal'] ?? '';
             _professionController.text = userData.data()!['profession'] ?? '';
             _profilePictureURLController.text = userData.data()!['profilePictureURL'] ?? '';
             _reincarnationAnimalController.text = userData.data()!['reincarnationAnimal'] ?? '';
@@ -190,7 +214,6 @@ class _ProfilePageState extends State<ProfilePage> {
             _religionController.text = userData.data()!['religion'] ?? '';
             _schoolController.text = userData.data()!['school'] ?? '';
             _secondFavFruitController.text = userData.data()!['secondFavFruit'] ?? '';
-            _sexualPreferenceController.text = userData.data()!['sexualPreference'] ?? '';
             _superPowerController.text = userData.data()!['superPower'] ?? '';
             _themeSongController.text = userData.data()!['themeSong'] ?? '';
             _weirdestDreamController.text = userData.data()!['weirdestDream'] ?? '';
@@ -225,13 +248,13 @@ class _ProfilePageState extends State<ProfilePage> {
         'email': _emailController.text,
         'favoriteActivities': _favoriteActivitiesController.text,
         'firstName': _firstNameController.text,
-        'fitnessHabits': _fitnessHabitsController.text,
-        'gender': _genderController.text,
+        'fitnessHabits': _selectedFitnessHabits,
+        'gender': _selectedGender,
         'height': _heightController.text,
         'inspirationalFigure': _inspirationalFigureController.text,
         'languagesSpoken': _languagesSpokenController.text,
-        'locationPreference': int.tryParse(_locationPreferenceController.text) ?? 0,
-        'lookingFor': _lookingForController.text,
+        'locationPreference': _locationPreference,
+        'lookingFor': _selectedLookingFor,
         'meaningOfLife': _meaningOfLifeController.text,
         'nextCountryToTravelTo': _nextCountryController.text,
         'nounThatSymbolizesMe': _nounController.text,
@@ -243,7 +266,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'photoMeme': _photoMemeController.text,
         'photoSmile': _photoSmileController.text,
         'photoVibe': _photoVibeController.text,
-        'primaryGoal': _primaryGoalController.text,
+        'primaryGoal': _selectedPrimaryGoal,
         'profession': _professionController.text,
         'profilePictureURL': _profilePictureURLController.text,
         'reincarnationAnimal': _reincarnationAnimalController.text,
@@ -251,7 +274,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'religion': _religionController.text,
         'school': _schoolController.text,
         'secondFavFruit': _secondFavFruitController.text,
-        'sexualPreference': _sexualPreferenceController.text,
+        'sexualPreference': _selectedSexualPreference,
         'superPower': _superPowerController.text,
         'themeSong': _themeSongController.text,
         'weirdestDream': _weirdestDreamController.text,
@@ -275,6 +298,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    Color backgroundColor = _colorMap[_selectedPersonalityColor] ?? Colors.white;
+    bool isDarkBackground = _selectedPersonalityColor == 'Navy' || _selectedPersonalityColor == 'Black';
+    Color textColor = isDarkBackground ? Colors.white : Colors.black;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -286,205 +313,199 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
       body: Container(
-        color: _selectedPersonalityColor != null ? _colorMap[_selectedPersonalityColor!] : Colors.white,
+        color: backgroundColor,
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            TextField(
-              controller: _firstNameController,
-              decoration: const InputDecoration(labelText: 'First Name'),
+            _buildTextField(_firstNameController, 'First Name', textColor),
+            _buildTextField(_schoolController, 'School', textColor),
+            _buildTextField(_dietController, 'Diet', textColor),
+            _buildTextField(_professionController, 'Profession', textColor),
+            _buildTextField(_dobController, 'DOB (YYYY-MM-DD)', textColor, keyboardType: TextInputType.datetime),
+            _buildTextField(_adjectiveController, 'Adjective That Personifies Me', textColor),
+            _buildTextField(_maxAgeController, 'Max Age Preference', textColor),
+            _buildTextField(_minAgeController, 'Min Age Preference', textColor),
+            _buildTextField(_bioController, 'Bio', textColor),
+            _buildTextField(_bucketListController, 'Bucket List', textColor),
+            _buildTextField(_catchphraseController, 'Catchphrase', textColor),
+            _buildTextField(_dateIdeasController, 'Date Ideas', textColor),
+            _buildTextField(_desertIslandController, 'Desert Island Blank', textColor),
+            _buildTextField(_emailController, 'Email', textColor),
+            _buildTextField(_favoriteActivitiesController, 'Favorite Activities', textColor),
+            _buildDropdownButtonFormField(_selectedGender, 'Gender', _genderOptions, (value) {
+              setState(() {
+                _selectedGender = value;
+              });
+            }, textColor),
+            _buildTextField(_heightController, 'Height', textColor),
+            _buildTextField(_inspirationalFigureController, 'Inspirational Figure', textColor),
+            _buildTextField(_languagesSpokenController, 'Languages Spoken', textColor),
+            _buildTextField(_locationController, 'Location', textColor),
+            Text(
+              'Location Preference: ${_locationPreference.round()} km',
+              style: TextStyle(fontSize: 16, color: textColor),
             ),
-            TextField(
-              controller: _schoolController,
-              decoration: const InputDecoration(labelText: 'School'),
-            ),
-            TextField(
-              controller: _dietController,
-              decoration: const InputDecoration(labelText: 'Diet'),
-            ),
-            TextField(
-              controller: _professionController,
-              decoration: const InputDecoration(labelText: 'Profession'),
-            ),
-            // Add TextFields for other fields as needed
-            TextField(
-              controller: _dobController,
-              decoration: const InputDecoration(labelText: 'DOB'),
-            ),
-            TextField(
-              controller: _adjectiveController,
-              decoration: const InputDecoration(labelText: 'Adjective That Personifies Me'),
-            ),
-            TextField(
-              controller: _maxAgeController,
-              decoration: const InputDecoration(labelText: 'Max Age Preference'),
-            ),
-            TextField(
-              controller: _minAgeController,
-              decoration: const InputDecoration(labelText: 'Min Age Preference'),
-            ),
-            TextField(
-              controller: _bioController,
-              decoration: const InputDecoration(labelText: 'Bio'),
-            ),
-            TextField(
-              controller: _bucketListController,
-              decoration: const InputDecoration(labelText: 'Bucket List'),
-            ),
-            TextField(
-              controller: _catchphraseController,
-              decoration: const InputDecoration(labelText: 'Catchphrase'),
-            ),
-            TextField(
-              controller: _dateIdeasController,
-              decoration: const InputDecoration(labelText: 'Date Ideas'),
-            ),
-            TextField(
-              controller: _desertIslandController,
-              decoration: const InputDecoration(labelText: 'Desert Island Blank'),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _favoriteActivitiesController,
-              decoration: const InputDecoration(labelText: 'Favorite Activities'),
-            ),
-            TextField(
-              controller: _fitnessHabitsController,
-              decoration: const InputDecoration(labelText: 'Fitness Habits'),
-            ),
-            TextField(
-              controller: _genderController,
-              decoration: const InputDecoration(labelText: 'Gender'),
-            ),
-            TextField(
-              controller: _heightController,
-              decoration: const InputDecoration(labelText: 'Height'),
-            ),
-            TextField(
-              controller: _inspirationalFigureController,
-              decoration: const InputDecoration(labelText: 'Inspirational Figure'),
-            ),
-            TextField(
-              controller: _languagesSpokenController,
-              decoration: const InputDecoration(labelText: 'Languages Spoken'),
-            ),
-            TextField(
-              controller: _locationController,
-              decoration: const InputDecoration(labelText: 'Location'),
-            ),
-            TextField(
-              controller: _locationPreferenceController,
-              decoration: const InputDecoration(labelText: 'Location Preference'),
-            ),
-            TextField(
-              controller: _lookingForController,
-              decoration: const InputDecoration(labelText: 'Looking For'),
-            ),
-            TextField(
-              controller: _meaningOfLifeController,
-              decoration: const InputDecoration(labelText: 'Meaning Of Life'),
-            ),
-            TextField(
-              controller: _nextCountryController,
-              decoration: const InputDecoration(labelText: 'Next Country To Travel To'),
-            ),
-            TextField(
-              controller: _nounController,
-              decoration: const InputDecoration(labelText: 'Noun That Symbolizes Me'),
-            ),
-            DropdownButtonFormField<String>(
-              value: _selectedPersonalityColor,
-              decoration: const InputDecoration(labelText: 'Personality Color'),
-              items: _colorOptions.map((color) {
-                return DropdownMenuItem(
-                  value: color,
-                  child: Text(color),
-                );
-              }).toList(),
+            Slider(
+              value: _locationPreference,
+              min: 0,
+              max: 100,
+              divisions: 100,
+              label: _locationPreference.round().toString(),
               onChanged: (value) {
                 setState(() {
-                  _selectedPersonalityColor = value;
+                  _locationPreference = value;
                 });
               },
             ),
-            TextField(
-              controller: _petsController,
-              decoration: const InputDecoration(labelText: 'Pets'),
-            ),
-            TextField(
-              controller: _phoneNumberController,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
-            ),
-            TextField(
-              controller: _photoChillController,
-              decoration: const InputDecoration(labelText: 'Photo Chill'),
-            ),
-            TextField(
-              controller: _photoCrazyController,
-              decoration: const InputDecoration(labelText: 'Photo Crazy'),
-            ),
-            TextField(
-              controller: _photoMemeController,
-              decoration: const InputDecoration(labelText: 'Photo Meme'),
-            ),
-            TextField(
-              controller: _photoSmileController,
-              decoration: const InputDecoration(labelText: 'Photo Smile'),
-            ),
-            TextField(
-              controller: _photoVibeController,
-              decoration: const InputDecoration(labelText: 'Photo Vibe'),
-            ),
-            TextField(
-              controller: _primaryGoalController,
-              decoration: const InputDecoration(labelText: 'Primary Goal'),
-            ),
-            TextField(
-              controller: _profilePictureURLController,
-              decoration: const InputDecoration(labelText: 'Profile Picture URL'),
-            ),
-            TextField(
-              controller: _reincarnationAnimalController,
-              decoration: const InputDecoration(labelText: 'Reincarnation Animal'),
-            ),
-            TextField(
-              controller: _relationshipDealBreakerController,
-              decoration: const InputDecoration(labelText: 'Relationship Deal Breaker'),
-            ),
-            TextField(
-              controller: _religionController,
-              decoration: const InputDecoration(labelText: 'Religion'),
-            ),
-            TextField(
-              controller: _secondFavFruitController,
-              decoration: const InputDecoration(labelText: 'Second Favorite Fruit'),
-            ),
-            TextField(
-              controller: _sexualPreferenceController,
-              decoration: const InputDecoration(labelText: 'Sexual Preference'),
-            ),
-            TextField(
-              controller: _superPowerController,
-              decoration: const InputDecoration(labelText: 'Super Power'),
-            ),
-            TextField(
-              controller: _themeSongController,
-              decoration: const InputDecoration(labelText: 'Theme Song'),
-            ),
-            TextField(
-              controller: _weirdestDreamController,
-              decoration: const InputDecoration(labelText: 'Weirdest Dream'),
-            ),
-            TextField(
-              controller: _zodiacController,
-              decoration: const InputDecoration(labelText: 'Zodiac'),
-            ),
+            _buildTextField(_lookingForController, 'Looking For', textColor, readOnly: true, onTap: () async {
+              final List<String>? results = await showDialog<List<String>>(
+                context: context,
+                builder: (BuildContext context) {
+                  return MultiSelectDialog(
+                    items: _lookingForOptions,
+                    initialSelectedItems: _selectedLookingFor,
+                  );
+                },
+              );
+
+              if (results != null) {
+                setState(() {
+                  _selectedLookingFor = results;
+                  _lookingForController.text = _selectedLookingFor.join(', ');
+                });
+              }
+            }),
+            _buildTextField(_meaningOfLifeController, 'Meaning Of Life', textColor),
+            _buildTextField(_nextCountryController, 'Next Country To Travel To', textColor),
+            _buildTextField(_nounController, 'Noun That Symbolizes Me', textColor),
+            _buildDropdownButtonFormField(_selectedPersonalityColor, 'Personality Color', _colorOptions, (value) {
+              setState(() {
+                _selectedPersonalityColor = value;
+              });
+            }, textColor),
+            _buildTextField(_petsController, 'Pets', textColor),
+            _buildTextField(_phoneNumberController, 'Phone Number', textColor),
+            _buildTextField(_photoChillController, 'Photo Chill', textColor),
+            _buildTextField(_photoCrazyController, 'Photo Crazy', textColor),
+            _buildTextField(_photoMemeController, 'Photo Meme', textColor),
+            _buildTextField(_photoSmileController, 'Photo Smile', textColor),
+            _buildTextField(_photoVibeController, 'Photo Vibe', textColor),
+            _buildDropdownButtonFormField(_selectedPrimaryGoal, 'Primary Goal', _primaryGoalOptions, (value) {
+              setState(() {
+                _selectedPrimaryGoal = value;
+              });
+            }, textColor),
+            _buildDropdownButtonFormField(_selectedFitnessHabits, 'Fitness Habits', _fitnessHabitsOptions, (value) {
+              setState(() {
+                _selectedFitnessHabits = value;
+              });
+            }, textColor),
+            _buildTextField(_profilePictureURLController, 'Profile Picture URL', textColor),
+            _buildTextField(_reincarnationAnimalController, 'Reincarnation Animal', textColor),
+            _buildTextField(_relationshipDealBreakerController, 'Relationship Deal Breaker', textColor),
+            _buildTextField(_religionController, 'Religion', textColor),
+            _buildTextField(_secondFavFruitController, 'Second Favorite Fruit', textColor),
+            _buildDropdownButtonFormField(_selectedSexualPreference, 'Sexual Preference', _genderOptions, (value) {
+              setState(() {
+                _selectedSexualPreference = value;
+              });
+            }, textColor),
+            _buildTextField(_superPowerController, 'Super Power', textColor),
+            _buildTextField(_themeSongController, 'Theme Song', textColor),
+            _buildTextField(_weirdestDreamController, 'Weirdest Dream', textColor),
+            _buildTextField(_zodiacController, 'Zodiac', textColor),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String labelText, Color textColor, {TextInputType? keyboardType, bool readOnly = false, void Function()? onTap}) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(labelText: labelText, labelStyle: TextStyle(color: textColor)),
+      style: TextStyle(color: textColor),
+      keyboardType: keyboardType,
+      readOnly: readOnly,
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildDropdownButtonFormField(String? value, String labelText, List<String> options, void Function(String?)? onChanged, Color textColor) {
+    return DropdownButtonFormField<String>(
+      value: options.contains(value) ? value : null,
+      decoration: InputDecoration(labelText: labelText, labelStyle: TextStyle(color: textColor)),
+      items: options.map((option) {
+        return DropdownMenuItem(
+          value: option,
+          child: Text(option, style: TextStyle(color: textColor)),
+        );
+      }).toList(),
+      onChanged: onChanged,
+    );
+  }
+}
+
+class MultiSelectDialog extends StatefulWidget {
+  final List<String> items;
+  final List<String> initialSelectedItems;
+
+  MultiSelectDialog({
+    required this.items,
+    required this.initialSelectedItems,
+  });
+
+  @override
+  _MultiSelectDialogState createState() => _MultiSelectDialogState();
+}
+
+class _MultiSelectDialogState extends State<MultiSelectDialog> {
+  late List<String> _selectedItems;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedItems = widget.initialSelectedItems;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Select Items'),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: widget.items.map((item) {
+            return CheckboxListTile(
+              value: _selectedItems.contains(item),
+              title: Text(item),
+              controlAffinity: ListTileControlAffinity.leading,
+              onChanged: (isChecked) {
+                setState(() {
+                  if (isChecked!) {
+                    _selectedItems.add(item);
+                  } else {
+                    _selectedItems.remove(item);
+                  }
+                });
+              },
+            );
+          }).toList(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+          child: const Text('OK'),
+          onPressed: () {
+            Navigator.of(context).pop(_selectedItems);
+          },
+        ),
+      ],
     );
   }
 }
