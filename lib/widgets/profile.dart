@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -14,7 +13,6 @@ class _ProfilePageState extends State<ProfilePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Controllers for all the fields
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _adjectiveController = TextEditingController();
   final TextEditingController _maxAgeController = TextEditingController();
@@ -39,7 +37,6 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _meaningOfLifeController = TextEditingController();
   final TextEditingController _nextCountryController = TextEditingController();
   final TextEditingController _nounController = TextEditingController();
-  final TextEditingController _personalityColorController = TextEditingController();
   final TextEditingController _petsController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _photoChillController = TextEditingController();
@@ -60,6 +57,37 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _themeSongController = TextEditingController();
   final TextEditingController _weirdestDreamController = TextEditingController();
   final TextEditingController _zodiacController = TextEditingController();
+
+  // Controller for personalityColor
+  String? _selectedPersonalityColor;
+
+  // List of available colors
+  final List<String> _colorOptions = [
+    'Yellow',
+    'Navy',
+    'Red',
+    'Black',
+    'Pink',
+    'Purple',
+    'Green',
+    'Aquamarine',
+    'Orange',
+    'White'
+  ];
+
+  // Map of color names to hex codes
+  final Map<String, Color> _colorMap = {
+    'Yellow': Color(0xFFFFCF23),
+    'Navy': Color(0xFF00217D),
+    'Red': Color(0xFFFF0000),
+    'Black': Color(0xFF000000),
+    'Pink': Color(0xFFEC00FF),
+    'Purple': Color(0xFF7F00FF),
+    'Green': Color(0xFF228B22),
+    'Aquamarine': Color(0xFF7FFFD4),
+    'Orange': Color(0xFFDF751D),
+    'White': Color(0xFFFFFFFF),
+  };
 
   @override
   void initState() {
@@ -93,7 +121,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _meaningOfLifeController.dispose();
     _nextCountryController.dispose();
     _nounController.dispose();
-    _personalityColorController.dispose();
     _petsController.dispose();
     _phoneNumberController.dispose();
     _photoChillController.dispose();
@@ -147,7 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _meaningOfLifeController.text = userData.data()!['meaningOfLife'] ?? '';
             _nextCountryController.text = userData.data()!['nextCountryToTravelTo'] ?? '';
             _nounController.text = userData.data()!['nounThatSymbolizesMe'] ?? '';
-            _personalityColorController.text = userData.data()!['personalityColor'] ?? '';
+            _selectedPersonalityColor = userData.data()!['personalityColor'] ?? '';
             _petsController.text = userData.data()!['pets'] ?? '';
             _phoneNumberController.text = userData.data()!['phoneNumber'] ?? '';
             _photoChillController.text = userData.data()!['photoChill'] ?? '';
@@ -208,7 +235,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'meaningOfLife': _meaningOfLifeController.text,
         'nextCountryToTravelTo': _nextCountryController.text,
         'nounThatSymbolizesMe': _nounController.text,
-        'personalityColor': _personalityColorController.text,
+        'personalityColor': _selectedPersonalityColor,
         'pets': _petsController.text,
         'phoneNumber': _phoneNumberController.text,
         'photoChill': _photoChillController.text,
@@ -258,191 +285,205 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          TextField(
-            controller: _firstNameController,
-            decoration: const InputDecoration(labelText: 'First Name'),
-          ),
-          TextField(
-            controller: _schoolController,
-            decoration: const InputDecoration(labelText: 'School'),
-          ),
-          TextField(
-            controller: _dietController,
-            decoration: const InputDecoration(labelText: 'Diet'),
-          ),
-          TextField(
-            controller: _professionController,
-            decoration: const InputDecoration(labelText: 'Profession'),
-          ),
-          // Add TextFields for other fields as needed
-          TextField(
-            controller: _dobController,
-            decoration: const InputDecoration(labelText: 'DOB'),
-          ),
-          TextField(
-            controller: _adjectiveController,
-            decoration: const InputDecoration(labelText: 'Adjective That Personifies Me'),
-          ),
-          TextField(
-            controller: _maxAgeController,
-            decoration: const InputDecoration(labelText: 'Max Age Preference'),
-          ),
-          TextField(
-            controller: _minAgeController,
-            decoration: const InputDecoration(labelText: 'Min Age Preference'),
-          ),
-          TextField(
-            controller: _bioController,
-            decoration: const InputDecoration(labelText: 'Bio'),
-          ),
-          TextField(
-            controller: _bucketListController,
-            decoration: const InputDecoration(labelText: 'Bucket List'),
-          ),
-          TextField(
-            controller: _catchphraseController,
-            decoration: const InputDecoration(labelText: 'Catchphrase'),
-          ),
-          TextField(
-            controller: _dateIdeasController,
-            decoration: const InputDecoration(labelText: 'Date Ideas'),
-          ),
-          TextField(
-            controller: _desertIslandController,
-            decoration: const InputDecoration(labelText: 'Desert Island Blank'),
-          ),
-          TextField(
-            controller: _emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
-          ),
-          TextField(
-            controller: _favoriteActivitiesController,
-            decoration: const InputDecoration(labelText: 'Favorite Activities'),
-          ),
-          TextField(
-            controller: _fitnessHabitsController,
-            decoration: const InputDecoration(labelText: 'Fitness Habits'),
-          ),
-          TextField(
-            controller: _genderController,
-            decoration: const InputDecoration(labelText: 'Gender'),
-          ),
-          TextField(
-            controller: _heightController,
-            decoration: const InputDecoration(labelText: 'Height'),
-          ),
-          TextField(
-            controller: _inspirationalFigureController,
-            decoration: const InputDecoration(labelText: 'Inspirational Figure'),
-          ),
-          TextField(
-            controller: _languagesSpokenController,
-            decoration: const InputDecoration(labelText: 'Languages Spoken'),
-          ),
-          TextField(
-            controller: _locationController,
-            decoration: const InputDecoration(labelText: 'Location'),
-          ),
-          TextField(
-            controller: _locationPreferenceController,
-            decoration: const InputDecoration(labelText: 'Location Preference'),
-          ),
-          TextField(
-            controller: _lookingForController,
-            decoration: const InputDecoration(labelText: 'Looking For'),
-          ),
-          TextField(
-            controller: _meaningOfLifeController,
-            decoration: const InputDecoration(labelText: 'Meaning Of Life'),
-          ),
-          TextField(
-            controller: _nextCountryController,
-            decoration: const InputDecoration(labelText: 'Next Country To Travel To'),
-          ),
-          TextField(
-            controller: _nounController,
-            decoration: const InputDecoration(labelText: 'Noun That Symbolizes Me'),
-          ),
-          TextField(
-            controller: _personalityColorController,
-            decoration: const InputDecoration(labelText: 'Personality Color'),
-          ),
-          TextField(
-            controller: _petsController,
-            decoration: const InputDecoration(labelText: 'Pets'),
-          ),
-          TextField(
-            controller: _phoneNumberController,
-            decoration: const InputDecoration(labelText: 'Phone Number'),
-          ),
-          TextField(
-            controller: _photoChillController,
-            decoration: const InputDecoration(labelText: 'Photo Chill'),
-          ),
-          TextField(
-            controller: _photoCrazyController,
-            decoration: const InputDecoration(labelText: 'Photo Crazy'),
-          ),
-          TextField(
-            controller: _photoMemeController,
-            decoration: const InputDecoration(labelText: 'Photo Meme'),
-          ),
-          TextField(
-            controller: _photoSmileController,
-            decoration: const InputDecoration(labelText: 'Photo Smile'),
-          ),
-          TextField(
-            controller: _photoVibeController,
-            decoration: const InputDecoration(labelText: 'Photo Vibe'),
-          ),
-          TextField(
-            controller: _primaryGoalController,
-            decoration: const InputDecoration(labelText: 'Primary Goal'),
-          ),
-          TextField(
-            controller: _profilePictureURLController,
-            decoration: const InputDecoration(labelText: 'Profile Picture URL'),
-          ),
-          TextField(
-            controller: _reincarnationAnimalController,
-            decoration: const InputDecoration(labelText: 'Reincarnation Animal'),
-          ),
-          TextField(
-            controller: _relationshipDealBreakerController,
-            decoration: const InputDecoration(labelText: 'Relationship Deal Breaker'),
-          ),
-          TextField(
-            controller: _religionController,
-            decoration: const InputDecoration(labelText: 'Religion'),
-          ),
-          TextField(
-            controller: _secondFavFruitController,
-            decoration: const InputDecoration(labelText: 'Second Favorite Fruit'),
-          ),
-          TextField(
-            controller: _sexualPreferenceController,
-            decoration: const InputDecoration(labelText: 'Sexual Preference'),
-          ),
-          TextField(
-            controller: _superPowerController,
-            decoration: const InputDecoration(labelText: 'Super Power'),
-          ),
-          TextField(
-            controller: _themeSongController,
-            decoration: const InputDecoration(labelText: 'Theme Song'),
-          ),
-          TextField(
-            controller: _weirdestDreamController,
-            decoration: const InputDecoration(labelText: 'Weirdest Dream'),
-          ),
-          TextField(
-            controller: _zodiacController,
-            decoration: const InputDecoration(labelText: 'Zodiac'),
-          ),
-        ],
+      body: Container(
+        color: _selectedPersonalityColor != null ? _colorMap[_selectedPersonalityColor!] : Colors.white,
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            TextField(
+              controller: _firstNameController,
+              decoration: const InputDecoration(labelText: 'First Name'),
+            ),
+            TextField(
+              controller: _schoolController,
+              decoration: const InputDecoration(labelText: 'School'),
+            ),
+            TextField(
+              controller: _dietController,
+              decoration: const InputDecoration(labelText: 'Diet'),
+            ),
+            TextField(
+              controller: _professionController,
+              decoration: const InputDecoration(labelText: 'Profession'),
+            ),
+            // Add TextFields for other fields as needed
+            TextField(
+              controller: _dobController,
+              decoration: const InputDecoration(labelText: 'DOB'),
+            ),
+            TextField(
+              controller: _adjectiveController,
+              decoration: const InputDecoration(labelText: 'Adjective That Personifies Me'),
+            ),
+            TextField(
+              controller: _maxAgeController,
+              decoration: const InputDecoration(labelText: 'Max Age Preference'),
+            ),
+            TextField(
+              controller: _minAgeController,
+              decoration: const InputDecoration(labelText: 'Min Age Preference'),
+            ),
+            TextField(
+              controller: _bioController,
+              decoration: const InputDecoration(labelText: 'Bio'),
+            ),
+            TextField(
+              controller: _bucketListController,
+              decoration: const InputDecoration(labelText: 'Bucket List'),
+            ),
+            TextField(
+              controller: _catchphraseController,
+              decoration: const InputDecoration(labelText: 'Catchphrase'),
+            ),
+            TextField(
+              controller: _dateIdeasController,
+              decoration: const InputDecoration(labelText: 'Date Ideas'),
+            ),
+            TextField(
+              controller: _desertIslandController,
+              decoration: const InputDecoration(labelText: 'Desert Island Blank'),
+            ),
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            TextField(
+              controller: _favoriteActivitiesController,
+              decoration: const InputDecoration(labelText: 'Favorite Activities'),
+            ),
+            TextField(
+              controller: _fitnessHabitsController,
+              decoration: const InputDecoration(labelText: 'Fitness Habits'),
+            ),
+            TextField(
+              controller: _genderController,
+              decoration: const InputDecoration(labelText: 'Gender'),
+            ),
+            TextField(
+              controller: _heightController,
+              decoration: const InputDecoration(labelText: 'Height'),
+            ),
+            TextField(
+              controller: _inspirationalFigureController,
+              decoration: const InputDecoration(labelText: 'Inspirational Figure'),
+            ),
+            TextField(
+              controller: _languagesSpokenController,
+              decoration: const InputDecoration(labelText: 'Languages Spoken'),
+            ),
+            TextField(
+              controller: _locationController,
+              decoration: const InputDecoration(labelText: 'Location'),
+            ),
+            TextField(
+              controller: _locationPreferenceController,
+              decoration: const InputDecoration(labelText: 'Location Preference'),
+            ),
+            TextField(
+              controller: _lookingForController,
+              decoration: const InputDecoration(labelText: 'Looking For'),
+            ),
+            TextField(
+              controller: _meaningOfLifeController,
+              decoration: const InputDecoration(labelText: 'Meaning Of Life'),
+            ),
+            TextField(
+              controller: _nextCountryController,
+              decoration: const InputDecoration(labelText: 'Next Country To Travel To'),
+            ),
+            TextField(
+              controller: _nounController,
+              decoration: const InputDecoration(labelText: 'Noun That Symbolizes Me'),
+            ),
+            DropdownButtonFormField<String>(
+              value: _selectedPersonalityColor,
+              decoration: const InputDecoration(labelText: 'Personality Color'),
+              items: _colorOptions.map((color) {
+                return DropdownMenuItem(
+                  value: color,
+                  child: Text(color),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedPersonalityColor = value;
+                });
+              },
+            ),
+            TextField(
+              controller: _petsController,
+              decoration: const InputDecoration(labelText: 'Pets'),
+            ),
+            TextField(
+              controller: _phoneNumberController,
+              decoration: const InputDecoration(labelText: 'Phone Number'),
+            ),
+            TextField(
+              controller: _photoChillController,
+              decoration: const InputDecoration(labelText: 'Photo Chill'),
+            ),
+            TextField(
+              controller: _photoCrazyController,
+              decoration: const InputDecoration(labelText: 'Photo Crazy'),
+            ),
+            TextField(
+              controller: _photoMemeController,
+              decoration: const InputDecoration(labelText: 'Photo Meme'),
+            ),
+            TextField(
+              controller: _photoSmileController,
+              decoration: const InputDecoration(labelText: 'Photo Smile'),
+            ),
+            TextField(
+              controller: _photoVibeController,
+              decoration: const InputDecoration(labelText: 'Photo Vibe'),
+            ),
+            TextField(
+              controller: _primaryGoalController,
+              decoration: const InputDecoration(labelText: 'Primary Goal'),
+            ),
+            TextField(
+              controller: _profilePictureURLController,
+              decoration: const InputDecoration(labelText: 'Profile Picture URL'),
+            ),
+            TextField(
+              controller: _reincarnationAnimalController,
+              decoration: const InputDecoration(labelText: 'Reincarnation Animal'),
+            ),
+            TextField(
+              controller: _relationshipDealBreakerController,
+              decoration: const InputDecoration(labelText: 'Relationship Deal Breaker'),
+            ),
+            TextField(
+              controller: _religionController,
+              decoration: const InputDecoration(labelText: 'Religion'),
+            ),
+            TextField(
+              controller: _secondFavFruitController,
+              decoration: const InputDecoration(labelText: 'Second Favorite Fruit'),
+            ),
+            TextField(
+              controller: _sexualPreferenceController,
+              decoration: const InputDecoration(labelText: 'Sexual Preference'),
+            ),
+            TextField(
+              controller: _superPowerController,
+              decoration: const InputDecoration(labelText: 'Super Power'),
+            ),
+            TextField(
+              controller: _themeSongController,
+              decoration: const InputDecoration(labelText: 'Theme Song'),
+            ),
+            TextField(
+              controller: _weirdestDreamController,
+              decoration: const InputDecoration(labelText: 'Weirdest Dream'),
+            ),
+            TextField(
+              controller: _zodiacController,
+              decoration: const InputDecoration(labelText: 'Zodiac'),
+            ),
+          ],
+        ),
       ),
     );
   }
