@@ -268,7 +268,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'photoVibe': _photoVibeController.text,
         'primaryGoal': _selectedPrimaryGoal,
         'profession': _professionController.text,
-        'profilePictureURL': _profilePictureURLController.text,
+        //'profilePictureURL': _profilePictureURLController.text,
         'reincarnationAnimal': _reincarnationAnimalController.text,
         'relationshipDealBreaker': _relationshipDealBreakerController.text,
         'religion': _religionController.text,
@@ -385,11 +385,12 @@ class _ProfilePageState extends State<ProfilePage> {
             }, textColor),
             _buildTextField(_petsController, 'Pets', textColor),
             _buildTextField(_phoneNumberController, 'Phone Number', textColor),
-            _buildTextField(_photoChillController, 'Photo Chill', textColor),
-            _buildTextField(_photoCrazyController, 'Photo Crazy', textColor),
-            _buildTextField(_photoMemeController, 'Photo Meme', textColor),
-            _buildTextField(_photoSmileController, 'Photo Smile', textColor),
-            _buildTextField(_photoVibeController, 'Photo Vibe', textColor),
+            _buildImageSection('Profile Picture', 'lib/images/default_profile.png'),
+            _buildImageSection('Meme Photo', 'lib/images/default_profile.png'),
+            _buildImageSection('Me Doing Something Crazy', 'lib/images/default_profile.png'),
+            _buildImageSection('Just Chilling', 'lib/images/default_profile.png'),
+            _buildImageSection('Smile', 'lib/images/default_profile.png'),
+            _buildImageSection('My Vibe', 'lib/images/default_profile.png'),
             _buildDropdownButtonFormField(_selectedPrimaryGoal, 'Primary Goal', _primaryGoalOptions, (value) {
               setState(() {
                 _selectedPrimaryGoal = value;
@@ -400,7 +401,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 _selectedFitnessHabits = value;
               });
             }, textColor),
-            _buildTextField(_profilePictureURLController, 'Profile Picture URL', textColor),
+            //_buildTextField(_profilePictureURLController, 'Profile Picture URL', textColor),
             _buildTextField(_reincarnationAnimalController, 'Reincarnation Animal', textColor),
             _buildTextField(_relationshipDealBreakerController, 'Relationship Deal Breaker', textColor),
             _buildTextField(_religionController, 'Religion', textColor),
@@ -442,6 +443,25 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       }).toList(),
       onChanged: onChanged,
+    );
+  }
+
+  Widget _buildImageSection(String label, String placeholderPath) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: Colors.black, fontSize: 16),
+        ),
+        SizedBox(height: 8),
+        Image.asset(
+          placeholderPath,
+          height: 100,
+          width: 100,
+          fit: BoxFit.cover,
+        ),
+        SizedBox(height: 16),
+      ],
     );
   }
 }
